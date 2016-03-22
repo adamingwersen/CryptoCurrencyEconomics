@@ -85,7 +85,6 @@ plot(p)
 
 btccsv.df = read.csv("C:/Users/Adam/Downloads/coindesk-bpi-USD-close_data-2010-07-18_2016-03-18.csv")
 btccsv.df$date = as.Date(btccsv.df$Date)
-btccsv.df$Close.Price = as.integer(btccsv.df$Close.Price)
 dates.price = btccsv.df$date
 
 wikidates = dates.wiki.btc[dates.wiki.btc %in% dates.price]
@@ -119,6 +118,6 @@ btccsv.df2 = arrange(btccsv.df2, desc(date))
 
 ## Create plotvars ##
 #####################
-
+library("dplyr")
 joined2 = left_join(btccsv.df2, wiki.get.df2, by = "date")
-write.csv(joined2, "C:/Users/Adam/Downloads/joined2.csv")
+write.csv(joined2, "C:/Users/Adam/Downloads/joinedx.csv")

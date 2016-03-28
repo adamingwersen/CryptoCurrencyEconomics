@@ -1,11 +1,8 @@
-# CryptoCurrencyEconomics
-Project Spring 2016
+<center><h3>Project Description <br>Cryptocurrencies as financial assets: The price of a BitCoin</br></h3></center>
 
-<h3>Project Description <br>Cryptocurrencies as financial assets: The price of a BitCoin</br></h3>
+<center>Adam Frederik Ingwersen Linnemann, GQR701</center>
 
-Adam Frederik Ingwersen Linnemann, GQR701
-
-Spring 2016
+<center>Spring 2016</center>
 
 <h4>Motivation</h4>
 

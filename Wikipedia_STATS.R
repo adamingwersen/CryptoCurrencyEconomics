@@ -1,70 +1,78 @@
-install.packages("rvest")
 library("rvest")
 library("dplyr")
 library("stringr")
 library("XML")
 
 wikilink = "http://stats.grok.se/en/201601/Bitcoin"
-css.selector = "body > script"
-css.selector2 = "body > form #year"
+css.selector = "body > form #year"
 
-# Test structure of HTML
+## Fetch string of dates ##
+ # The HTML-structure of "stats.grok.se" does not allow for a view of the entire period of interest.
+ # Furthermore, it does not contain embedded link for redirection - thus something else must be done..
+ # Investigating; a date-string variable is contained in a css.selector element, which can be utilized for -
+ # -creating the relevant links needed for a crawler.
 
-BTC_WIKI = read_html(wikilink) %>%
+BTC_WIKI.dates = read_html(wikilink) %>%
   html_nodes(css = css.selector) %>%
   html_text()
 
-# Fetch string of dates
-
-BTC_WIKI.dates = read_html(wikilink) %>%
-  html_nodes(css = css.selector2) %>%
-  html_text()
-
-# Seperate string by delimiter into list
+## Construct usable format of the imported data ##
+ # Dates are contained as one long string, "\n 201604\n 201603..."
+ # String manipulation is needed - a list containing seperate dates in correct format
+ #.. without whitespace is the aim of this maneuver.
 
 data.manipulated = as.data.frame(str_split(BTC_WIKI.dates, pattern = "\n"))
-data.manipulated = data.manipulated$c........201603......201602......201601......201512......201511...
+data.manipulated = data.manipulated[,1]
 data.manipulated = as.character(data.manipulated)
 data.manipulated = data.manipulated[-1]
 
 trim <- function (x) gsub("^\\s+|\\s+$", "", x)
 data.manipulated = trim(data.manipulated)
 
-# Link for which we need to feed the datestrings into, "LANK";
-  ## Search term can be adjusted by replacing Bitcoin:
+## Now, create the links needed for the crawler ##
+ # Call base-link to be replicated with varying dates, "LANK"
+ # Search term can be adjusted by replacing /Bitcoin 
+ # link_str_replace simply inserts and element(date) into the link
 
 groks.link = "http://stats.grok.se/json/en/LANK/Bitcoin"
 
-link_str_replace = function(data.manipulated){
-  link.replacement = gsub("\\LANK", data.manipulated, groks.link)
+link_str_replace = function(x){
+  link.replacement = gsub("\\LANK", x, groks.link)
 }
 
-list.of.links = ldply(data.manipulated, link_str_replace)
-list.of.links = list.of.links$V1
-list.of.links = list.of.links[1:100]
+## Loop through list of dates and create correspodning links using HW's "plyr"  package##
+library("plyr")
 
-# Now we have a list of viable links. 
-# This enables us to create a crawler for the wiki-site
-  # The content on groks.se is formatted as a JSON table
-  # This requires some extra work as the content is nested
-  # Proceed as follows: Get raw content, parse using RJSONIO, ldply to dataframe
+links = ldply(data.manipulated, link_str_replace)
+links.list = links$V1
+ # The last element is not relevant - exclude.
+links.list = links.list[1:length(links.list)-1]
+ # Now we have a list of viable links. 
+
+## Crawler for the wiki-site ##
+ # The content on groks.se is formatted as a JSON table
+ # This requires some extra work as the content is nested
+ # Proceed as follows: Get raw content, parse using RJSONIO, ldply to dataframe
 library("RJSONIO")
 
-
-crawl_groks = function(list.of.links){
-  searchinfo_wiki = fromJSON(list.of.links, simplifyMatrix = TRUE, flatten = TRUE)
+crawl_groks = function(x){
+  searchinfo_wiki = fromJSON(x, simplifyMatrix = TRUE, flatten = TRUE)
     get.inf = ldply(searchinfo_wiki$daily_views, data.frame)
   return(cbind(get.inf))
 }
-wiki.get = lapply(list.of.links, crawl_groks)
+wiki.get = lapply(links.list, crawl_groks)
+
+ # Inspecting wiki.get: Nested list of data.frames
+ # This can be combatted by ldply to data.frame
 wiki.get.df = ldply(wiki.get, data.frame)
 
-wiki.get.df$date = as.Date(wiki.get.df$.id)
+## Cleaning data ##
+wiki.get.df$date = as.Date(wiki.get.df$.id)                                             # Create new variables 
 wiki.get.df$queries = as.numeric(wiki.get.df$X..i..)
 
-wiki.get.df$X..i.. = NULL
+wiki.get.df$X..i.. = NULL                                                               # Deleting old variables
 wiki.get.df$.id = NULL
-wiki.get.df = wiki.get.df[!(wiki.get.df$queries==0 & wiki.get.df$date>"2010-01-01"),]
+wiki.get.df = wiki.get.df[!(wiki.get.df$queries==0 & wiki.get.df$date>"2010-01-01"),]   # Align
 wiki.get.df = na.omit(wiki.get.df)
 
 ##################################################### VISUALIZATIONS ###########################################################

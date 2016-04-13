@@ -12,6 +12,9 @@ loginURL 		<- "https://accounts.google.com/accounts/ServiceLogin"
 authenticateURL <- "https://accounts.google.com/accounts/ServiceLoginAuth"
 trendsURL 		<- "http://www.google.com/trends/TrendsRepport?"
 
+btc = "Bitcoin"                     # Insert search-term
+out <- "C:/Users/Adam/Downloads"    # Preferred local output directory
+
 
 
 ############################################
@@ -69,9 +72,6 @@ if( grepl( "You have reached your quota limit", res ) ) {
   stop( "Quota limit reached; You should wait a while and try again later" )
 }
 
-btc = "Bitcoin"
-
-out <- "C:/Users/Adam/Downloads"
 # Execute Google Trends Setup w.o. Date-specc
 Google_Static_Fetch = function(x){
   ch = gLogin(username, password)
@@ -87,9 +87,13 @@ if( grepl( "You have reached your quota limit", res) ) {
   stop( "Quota limit reached; You should wait a while and try again later" )
   }
 
+#################################################################################
+################ Utilize above defined functions to search Google ###############
+
+
 ## BITCOIN ##
 #############
-Google_Static_Fetch("Bitcoin")
+Google_Static_Fetch(btc)
 Bitcoin.df = read.csv("C:/Users/Adam/Downloads/GTrends_Bitcoin.csv", header = FALSE, stringsAsFactors = FALSE, sep ="," )
 # Clean data, split into multiple datasets - timeseries & Geography
 
@@ -100,11 +104,14 @@ Bitcoin_TS.df[c("V3","V4")] <- list(NULL)
 library("plyr")
 Bitcoin_TS.df = rename(Bitcoin_TS.df, c("V1"="Datespan", "V2"="Index"))
 #Transform vars
-Bitcoin_TS.df$Index = as.integer(Bitcoin_TS.df$Index)
+library("stringr")
+Bitcoin_TS.df$Index = as.numeric(Bitcoin_TS.df$Index)
+Bitcoin_TS.df$Datespan = word(Bitcoin_TS.df$Datespan, start = 3L)
 Bitcoin_TS.df$Datespan = as.Date(Bitcoin_TS.df$Datespan)
 Bitcoin_TS.df <- subset(Bitcoin_TS.df, Datespan > as.Date("2010-07-18") )
 
-
+####################################################################################
+################ Various other searches and visualization ##########################
 
 ## BLOCKCHAIN ##
 #################
@@ -136,8 +143,8 @@ Litecoin_TS.df$Index = as.integer(Litecoin_TS.df$Index)
 Litecoin_TS.df$Datespan = as.Date(Litecoin_TS.df$Datespan)
 Litecoin_TS.df <- subset(Litecoin_TS.df, Datespan > as.Date("2010-10-08") )
 
-## MERGE ##
-###########
+## MERGE ALL ##
+###############
 
 Crypto.df = left_join(Bitcoin_TS.df, Blockchain_TS.df, by = "Datespan")
 Crypto.df = left_join(Crypto.df, Litecoin_TS.df, by = "Datespan")

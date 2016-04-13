@@ -67,8 +67,8 @@ wiki.get = lapply(links.list, crawl_groks)
 wiki.get.df = ldply(wiki.get, data.frame)
 
 ## Cleaning data ##
-wiki.get.df$date = as.Date(wiki.get.df$.id)                                             # Create new variables 
-wiki.get.df$queries = as.numeric(wiki.get.df$X..i..)
+wiki.get.df$date = as.Date(wiki.get.df[,1])                                             # Create new variables 
+wiki.get.df$queries = as.numeric(wiki.get.df[,2])
 
 wiki.get.df$X..i.. = NULL                                                               # Deleting old variables
 wiki.get.df$.id = NULL

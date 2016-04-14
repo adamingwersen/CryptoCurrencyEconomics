@@ -97,7 +97,7 @@ Google_Static_Fetch(btc)
 Bitcoin.df = read.csv("C:/Users/Adam/Downloads/GTrends_Bitcoin.csv", header = FALSE, stringsAsFactors = FALSE, sep ="," )
 # Clean data, split into multiple datasets - timeseries & Geography
 
-Bitcoin_TS.df = Bitcoin.df[grep("^20", Bitcoin.df$V1),]
+Bitcoin_TS.df = Bitcoin.df[grep("^20", Bitcoin.df[,1]),]
 # Dropping columns, V3, V4:
 Bitcoin_TS.df[c("V3","V4")] <- list(NULL)
 # Renaming variables V1/V2:

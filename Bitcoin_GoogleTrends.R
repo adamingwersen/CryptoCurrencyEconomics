@@ -167,8 +167,13 @@ p = p + ggtitle("Google Trends: Cryptocurrency")
 p = p + theme_minimal()
 plot(p)
 
-# Two-argument fetch fct.
-Google_Trends_Fetch = function(x, y){
+
+
+# This function can be instantiated if one wishes to specify the date-interval
+# Allows for daily trend-statistics - will output as seperate files to the output directory
+# These files has to imported and seperated, then merged. Script can be found in SDS_Project
+
+Google_Trends_Multi = function(x, y){
   ch <- gLogin( username, password )
   authenticatePage2 <- getURL("http://www.google.com", curl=ch)
   for(i in x) {

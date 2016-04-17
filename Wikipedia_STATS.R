@@ -120,12 +120,4 @@ mtext("log(Google.Trends)",side=4,line=3)
 legend("topleft",col=c("red","blue"),lty=1,legend=c("$-Price","Search"))
 title("Log of BitCoins dollar-value & Search queries")
 
-## ORDER Bitcoin_TS.df by ascending ##
-library(plyr)
-btccsv.df2 = arrange(btccsv.df2, desc(date))
 
-## Create plotvars ##
-#####################
-library("dplyr")
-joined2 = left_join(btccsv.df2, wiki.get.df2, by = "date")
-write.csv(joined2, "C:/Users/Adam/Downloads/joinedx.csv")

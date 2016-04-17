@@ -4,8 +4,8 @@ library(stringr)	# For str_trim() to trip whitespace from strings
 library(dplyr)    # Loop
 
 # Google account settings
-username <- "***"
-password <- "***"
+username <- "xxx"
+password <- "xxx"
 
 # URLs
 loginURL 		<- "https://accounts.google.com/accounts/ServiceLogin"

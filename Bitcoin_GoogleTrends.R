@@ -168,7 +168,6 @@ p = p + theme_minimal()
 plot(p)
 
 
-
 # This function can be instantiated if one wishes to specify the date-interval
 # Allows for daily trend-statistics - will output as seperate files to the output directory
 # These files has to imported and seperated, then merged. Script can be found in SDS_Project

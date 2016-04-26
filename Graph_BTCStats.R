@@ -98,7 +98,42 @@ VOL.df = VOL.df[!(VOL.df$date<"2013-01-01"),]
 VOL.df = VOL.df[!(VOL.df$date>"2016-04-23"),]
 VOL.df$volume = VOL.df$volume/1000000
 
+## BTC/USD Exchange Rate
+EXCH.link = "https://blockchain.info/da/charts/market-price?showDataPoints=false&timespan=all&show_header=true&daysAverageString=1&scale=0&format=csv&address="
+EXCH = read_html(EXCH.link)%>%
+  html_text()
+write.csv(EXCH, file="C:/Users/Adam/Downloads/EXCH.csv")
+EXCH.df = read.csv("C:/Users/Adam/Downloads/EXCH.csv")
+EXCH.df$date = EXCH.df[,1]
+EXCH.df$rate = EXCH.df[,2]
+EXCH.df$X04.01.2009.18.15.05 = NULL
+EXCH.df$X0.0 = NULL
 
+EXCH.df$date = word(EXCH.df$date, 1L)
+EXCH.df$date = parse_date_time(EXCH.df$date, c('dmy'))
+EXCH.df$date = as.Date(EXCH.df$date)
+EXCH.df = EXCH.df[!(EXCH.df$date<"2013-01-01"),]
+EXCH.df = EXCH.df[!(EXCH.df$date>"2016-04-23"),]
+
+## Bitcoins in circulation
+CIRC.link = "https://blockchain.info/da/charts/total-bitcoins?showDataPoints=false&timespan=all&show_header=true&daysAverageString=1&scale=0&format=csv&address="
+CIRC1 = read_html(CIRC.link)%>%
+  html_text()
+CIRC = gsub("\\.0", "", CIRC1)
+write.table(CIRC, file = "C:/Users/Adam/Downloads/CIRC.csv", quote = FALSE, sep = ",", eol = "\n", dec = ".", row.names = FALSE, col.names = FALSE)
+?write.table
+write.csv(CIRC, file="C:/Users/Adam/Downloads/CIRC.csv", sep = ",")
+CIRC.df = read.csv("C:/Users/Adam/Downloads/CIRC.csv")
+CIRC.df$date = CIRC.df[,1]
+CIRC.df$circulation = CIRC.df[,2]
+CIRC.df$X04.01.2009.18.15.05 = NULL
+CIRC.df$X50.0 = NULL
+
+CIRC.df$date = word(CIRC.df$date, 1L)
+CIRC.df$date = parse_date_time(CIRC.df$date, c('dmy'))
+CIRC.df$date = as.Date(CIRC.df$date)
+CIRC.df = CIRC.df[!(CIRC.df$date<"2013-01-01"),]
+CIRC.df = CIRC.df[!(CIRC.df$date>"2016-04-23"),]
 ##############
 ## PLOTTING ##
 ##############
@@ -136,3 +171,26 @@ vol.plot = ggplot(data = VOL.df, aes(x = date, y = volume))
 vol.plot = vol.plot + geom_point(colour = "red") + xlab("Date \n \n Source: http://blockchain.info") +
             ylab("Daily Trade Volume in Millions") + ggtitle("Figure 4: Trade Volume on The Bitcoin Platform") + theme_minimal()
 plot(vol.plot)
+
+  # Exchange Rate plot
+exch.plot = ggplot(data=EXCH.df, aes(x = date, y = rate))
+exch.plot = exch.plot + geom_line(colour = "black") + xlab("Date \n \n Source: http://blockchain.info") +
+              ylab("Daily BTC/USD Exchange Rate") + ggtitle("Figure A.2: BTC/USD Exchange Rate") + theme_minimal()
+plot(exch.plot)
+
+##Plott G&W::##
+wiki.get.df = wiki.get.df[!(wiki.get.df$date<"2013-01-01"),]
+wiki.get.df = wiki.get.df[!(wiki.get.df$date>"2016-04-23"),]
+
+Bitcoin_TS.df = Bitcoin_TS.df[!(Bitcoin_TS.df$Datespan<"2013-01-01"),]
+Bitcoin_TS.df = Bitcoin_TS.df[!(Bitcoin_TS.df$Datespan>"2016-04-23"),]
+
+trend.plot = ggplot(data = Bitcoin_TS.df, aes(x= Datespan, y= Index))
+trend.plot = trend.plot + geom_line(colour = "red") + ggtitle("Figure 6: Google Trends Index Values for [Bitcoin], Weekly") +
+  theme_minimal() + xlab("Date \n \n Source: https://google.trends.com") + ylab("Index of Search Queries")
+plot(trend.plot)
+
+wiki.plot = ggplot(data = wiki.get.df, aes(x = date, y = log(queries)))
+wiki.plot = wiki.plot + geom_line(colour = "black") + ggtitle("Figure 5: Wikipedia Search Queries for [Bitcoin], Daily") + 
+  theme_minimal() + xlab("Date \n \n Source: http://stats.grok.se") + ylab("Log of Queries")
+plot(wiki.plot)

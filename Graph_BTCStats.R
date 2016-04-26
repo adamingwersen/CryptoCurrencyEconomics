@@ -194,3 +194,21 @@ wiki.plot = ggplot(data = wiki.get.df, aes(x = date, y = log(queries)))
 wiki.plot = wiki.plot + geom_line(colour = "black") + ggtitle("Figure 5: Wikipedia Search Queries for [Bitcoin], Daily") + 
   theme_minimal() + xlab("Date \n \n Source: http://stats.grok.se") + ylab("Log of Queries")
 plot(wiki.plot)
+
+
+## JOIN --> EXPORT ##
+FREQ.exp = FREQ.df[!(FREQ.df$date>"2016-01-04"),]
+EXCH.exp = EXCH.df[!(EXCH.df$date>"2016-01-04"),]
+exchdate.list = EXCH.exp$date
+wiki.get.exp = wiki.get.df[!(wiki.get.df$date<"2013-01-01"),]
+wiki.get.exp = na.omit(wiki.get.exp)
+wiki.get.exp = wiki.get.exp[wiki.get.exp$date %in% as.Date(exchdate.list),]
+wikiexp.list = wiki.get.exp$date
+EXCH.exp = EXCH.exp[EXCH.exp$date %in% as.Date(wikiexp.list),]
+FREQ.exp = FREQ.exp[FREQ.exp$date %in% as.Date(wikiexp.list),]
+VOL.exp = VOL.df[VOL.df$date %in% as.Date(wikiexp.list),]
+
+wiki.exch.freq.vol = join_all(list(EXCH.exp, wiki.get.exp, FREQ.exp, VOL.exp), by = "date", type = "full")
+write.csv(wiki.exch.freq.vol, "C:/Users/Adam/Downloads/BTCDATA2.csv")
+
+

@@ -1,4 +1,4 @@
-<h3><center>Project Description <br>Cryptocurrencies as financial assets: The price of a BitCoin</br></center></h3>
+<h3><center>Project Description <br>Cryptocurrency Economics - A Demand Side Cointegration Analysis of Bitcoin Price Formation</br></center></h3>
 
 <center>Adam Frederik Ingwersen Linnemann, GQR701</center>
 

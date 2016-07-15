@@ -4,7 +4,7 @@ library("stringr")
 library("XML")
 
 wikilink = "http://stats.grok.se/en/201601/Bitcoin"
-css.selector = "body > form #year"
+css.selector = "body > form > #year"
 
 ## Fetch string of dates ##
  # The HTML-structure of "stats.grok.se" does not allow for a view of the entire period of interest.
@@ -14,39 +14,41 @@ css.selector = "body > form #year"
 
 BTC_WIKI.dates = read_html(wikilink) %>%
   html_nodes(css = css.selector) %>%
-  html_text()
+  html_text(trim = FALSE)
+
+BTC_WIKI.dates = sapply(seq(from=1, to=nchar(BTC_WIKI.dates), by=6), function(i) substr(BTC_WIKI.dates, i, i+5))
 
 ## Construct usable format of the imported data ##
  # Dates are contained as one long string, "\n 201604\n 201603..."
  # String manipulation is needed - a list containing seperate dates in correct format
  #.. without whitespace is the aim of this maneuver.
 
-data.manipulated = as.data.frame(str_split(BTC_WIKI.dates, pattern = "\n"))
-data.manipulated = data.manipulated[,1]
-data.manipulated = as.character(data.manipulated)
-data.manipulated = data.manipulated[-1]
+data.manipulated = as.data.frame(sapply(seq(from=1, to=nchar(BTC_WIKI.dates), by=6), function(i) substr(BTC_WIKI.dates, i, i+5)))
+names(data.manipulated)[1] = "dates"
+data.manipulated$dates = as.character(data.manipulated$dates)
 
 trim <- function (x) gsub("^\\s+|\\s+$", "", x)
-data.manipulated = trim(data.manipulated)
 
 ## Now, create the links needed for the crawler ##
  # Call base-link to be replicated with varying dates, "LANK"
  # Search term can be adjusted by replacing /Bitcoin 
  # link_str_replace simply inserts and element(date) into the link
 
-groks.link = "http://stats.grok.se/json/en/LANK/Bitcoin"
+## What do you want to search for on wiki?
+searchterm = "Bitcoin"
 
-link_str_replace = function(x){
+groks.base = "http://stats.grok.se/json/en/LANK/"
+groks.link = paste0(groks.base, searchterm)
+
+
+link_str_replace = function(x, y){
   link.replacement = gsub("\\LANK", x, groks.link)
 }
 
 ## Loop through list of dates and create correspodning links using HW's "plyr"  package##
 library("plyr")
 
-links = ldply(data.manipulated, link_str_replace)
-links.list = links$V1
- # The last element is not relevant - exclude.
-links.list = links.list[1:length(links.list)-1]
+links = llply(data.manipulated$dates, link_str_replace)
  # Now we have a list of viable links. 
 
 ## Crawler for the wiki-site ##
@@ -60,11 +62,11 @@ crawl_groks = function(x){
     get.inf = ldply(searchinfo_wiki$daily_views, data.frame)
   return(cbind(get.inf))
 }
-wiki.get = lapply(links.list, crawl_groks)
+wiki.jsonget = lapply(links, crawl_groks)
 
  # Inspecting wiki.get: Nested list of data.frames
  # This can be combatted by ldply to data.frame
-wiki.get.df = ldply(wiki.get, data.frame)
+wiki.get.df = ldply(wiki.jsonget, data.frame)
 
 ## Cleaning data ##
 wiki.get.df$date = as.Date(wiki.get.df[,1])                                             # Create new variables 
@@ -81,34 +83,31 @@ wiki.get.df = na.omit(wiki.get.df)
 ## INTRO GGPLOT ##
 ##################
 library(ggplot2)
-p = ggplot(data = wiki.get.df2, aes(x=date, y=log(queries)))
-p = p + geom_line(na.omit = TRUE) + geom_line(data = btccsv.df2, aes(y = log(Close.Price)))
+p = ggplot(data = wiki.get.df, aes(x=wikidates, y=log(queries)))
+p = p + geom_line(data = wiki.get.df, aes(y = log(queries)))
 p = p + theme_minimal() + ggtitle("Bitcoin\nLogarithmic transformation of Daily Wikipedia Search Queries")
 plot(p)
-
 
 
 ## DUAL AXIS PLOT ##
 ####################
 
-btccsv.df = read.csv("C:/Users/Adam/Downloads/coindesk-bpi-USD-close_data-2010-07-18_2016-03-18.csv")
+# Download as CSV:http:   //www.coindesk.com/price/
+# Set Period : All
+csvdir = "/home/adam/Documents/Data/BSCThesis/coindesk-bpi-USD-close_data-2010-07-18_2016-07-15.csv"
+
+btccsv.df = read.csv(csvdir)
 btccsv.df$date = as.Date(btccsv.df$Date)
 dates.price = btccsv.df$date
+dates.wiki = wiki.get.df$date
 
-wikidates = dates.wiki.btc[dates.wiki.btc %in% dates.price]
+wikidates = dates.wiki[dates.wiki %in% dates.price]
 
-datespan = Bitcoin_TS.df$Datespan
-dates.wiki.btc = wiki.get.df$date
 
-wikidates = dates.wiki.btc[dates.wiki.btc %in% datespan]
-
-btccsv.df2 = btccsv.df[btccsv.df$date %in% as.Date(wikidates),]
-Bitcoin_TS.df2 = Bitcoin_TS.df[Bitcoin_TS.df$Datespan %in% as.Date(wikidates),]
+btccsv.df = btccsv.df[btccsv.df$date %in% as.Date(wikidates),]
 wiki.get.df2 = wiki.get.df[wiki.get.df$date %in% as.Date(wikidates),]
-Bitcoin_TS.df2$date = Bitcoin_TS.df2$Datespan
 
-pricebtc = as.numeric(btccsv.df2$Close.Price)
-BTCPrice.wikidates = as.numeric(Bitcoin_TS.df2$Index)
+pricebtc = as.numeric(btccsv.df$Close.Price)
 WikiQuery.wikidates = as.numeric(wiki.get.df2$queries)
 
 par(mar=c(5,4,4,5)+.1)

@@ -13,7 +13,7 @@ authenticateURL <- "https://accounts.google.com/accounts/ServiceLoginAuth"
 trendsURL 		<- "http://www.google.com/trends/TrendsRepport?"
 
 btc = "Bitcoin"                     # Insert search-term
-out <- "C:/Users/Adam/Downloads"    # Preferred local output directory
+out <- "~/Documents/Data/BSCThesis"    # Preferred local output directory
 
 
 
@@ -94,7 +94,7 @@ if( grepl( "You have reached your quota limit", res) ) {
 ## BITCOIN ##
 #############
 Google_Static_Fetch(btc)
-Bitcoin.df = read.csv("C:/Users/Adam/Downloads/GTrends_Bitcoin.csv", header = FALSE, stringsAsFactors = FALSE, sep ="," )
+Bitcoin.df = read.csv("~/Documents/Data/BSCThesis/GTrends_Bitcoin.csv", header = FALSE, stringsAsFactors = FALSE, sep ="," )
 # Clean data, split into multiple datasets - timeseries & Geography
 
 Bitcoin_TS.df = Bitcoin.df[grep("^20", Bitcoin.df[,1]),]
@@ -116,7 +116,7 @@ Bitcoin_TS.df <- subset(Bitcoin_TS.df, Datespan > as.Date("2010-07-18") )
 ## BLOCKCHAIN ##
 #################
 Google_Static_Fetch("Blockchain")
-Blockchain.df = read.csv("C:/Users/Adam/Downloads/GTrends_Blockchain.csv", header = FALSE, stringsAsFactors = FALSE, sep = ",")
+Blockchain.df = read.csv("~/Documents/Data/BSCThesis/GTrends_Blockchain.csv", header = FALSE, stringsAsFactors = FALSE, sep = ",")
 Blockchain_TS.df = Blockchain.df[grep("^20", Blockchain.df$V1),]
 # Dropping columns, V3, V4:
 Blockchain_TS.df[c("V3","V4")] <- list(NULL)
@@ -131,7 +131,7 @@ Blockchain_TS.df <- subset(Blockchain_TS.df, Datespan > as.Date("2010-01-01") )
 ## LITECOIN ##
 ##############
 Google_Static_Fetch("Litecoin")
-Litecoin.df = read.csv("C:/Users/Adam/Downloads/GTrends_Litecoin.csv", header = FALSE, stringsAsFactors = FALSE, sep = ",")
+Litecoin.df = read.csv("~/Documents/Data/BSCThesis/GTrends_Litecoin.csv", header = FALSE, stringsAsFactors = FALSE, sep = ",")
 Litecoin_TS.df = Litecoin.df[grep("^20", Litecoin.df$V1),]
 # Dropping columns, V3, V4:
 Litecoin_TS.df[c("V3","V4")] <- list(NULL)
